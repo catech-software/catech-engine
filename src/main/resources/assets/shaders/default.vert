@@ -1,8 +1,8 @@
 #version 410 core
 
-in vec3 position;
-in vec4 color;
-in vec3 normal;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec3 normal;
 
 out vec3 vertPosition;
 out vec4 vertColor;

@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.lwjgl.assimp.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -13,14 +12,15 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.joml.Matrix4f;
 
-import net.catech_software.engine.render.shader.*;
 import net.catech_software.engine.model.LoadScene;
+import net.catech_software.engine.model.Model;
+import net.catech_software.engine.render.shader.*;
 import net.catech_software.util.Resource;
 
 public class Main {
   private static long window;
-  private static int vao, vbo;
   private static ShaderList shaders;
+  private static Model model;
   private static IntBuffer width, height;
   private static float prevRotation, rotation = 0f;
   private static int fpsCount, upsCount;
@@ -59,59 +59,6 @@ public class Main {
     GL.createCapabilities();
 
     GLFW.glfwSwapInterval(1);
-
-    try (AIScene scene = LoadScene.loadScene("assets/models/suzanne/suzanne.gltf")) {
-      System.out.printf("%s\n", scene.mName().dataString());
-    }
-
-    vao = GL41C.glGenVertexArrays();
-    GL41C.glBindVertexArray(vao);
-
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      FloatBuffer vertices = stack.mallocFloat(36 * 10);
-      // Position: 3 floats (xyz), Color: 4 floats (rgba), Normal: 3 floats (xyz)
-      vertices.put(-0.5f).put(0.5f).put(0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(0f).put(1f)
-              .put(-0.5f).put(-0.5f).put(0.5f).put(0f).put(0f).put(1f).put(1f).put(0f).put(0f).put(1f)
-              .put(0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(0f).put(1f)
-              .put(0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(0f).put(1f)
-              .put(0.5f).put(0.5f).put(0.5f).put(0f).put(1f).put(0f).put(1f).put(0f).put(0f).put(1f)
-              .put(-0.5f).put(0.5f).put(0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(0f).put(1f)
-              .put(0.5f).put(0.5f).put(0.5f).put(0f).put(0f).put(0f).put(1f).put(1f).put(0f).put(0f)
-              .put(0.5f).put(-0.5f).put(0.5f).put(0f).put(0f).put(1f).put(1f).put(1f).put(0f).put(0f)
-              .put(0.5f).put(-0.5f).put(-0.5f).put(0f).put(1f).put(1f).put(1f).put(1f).put(0f).put(0f)
-              .put(0.5f).put(-0.5f).put(-0.5f).put(0f).put(1f).put(1f).put(1f).put(1f).put(0f).put(0f)
-              .put(0.5f).put(0.5f).put(-0.5f).put(0f).put(1f).put(0f).put(1f).put(1f).put(0f).put(0f)
-              .put(0.5f).put(0.5f).put(0.5f).put(0f).put(0f).put(0f).put(1f).put(1f).put(0f).put(0f)
-              .put(-0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(1f).put(0f)
-              .put(-0.5f).put(0.5f).put(0.5f).put(0f).put(0f).put(1f).put(1f).put(0f).put(1f).put(0f)
-              .put(0.5f).put(0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(1f).put(0f)
-              .put(0.5f).put(0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(1f).put(0f)
-              .put(0.5f).put(0.5f).put(-0.5f).put(0f).put(1f).put(0f).put(1f).put(0f).put(1f).put(0f)
-              .put(-0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(1f).put(0f)
-              .put(-0.5f).put(-0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(-1f).put(0f)
-              .put(-0.5f).put(-0.5f).put(0.5f).put(0f).put(0f).put(1f).put(1f).put(0f).put(-1f).put(0f)
-              .put(0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(-1f).put(0f)
-              .put(0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(-1f).put(0f)
-              .put(0.5f).put(-0.5f).put(-0.5f).put(0f).put(1f).put(0f).put(1f).put(0f).put(-1f).put(0f)
-              .put(-0.5f).put(-0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(-1f).put(0f)
-              .put(-0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(-1f).put(0f).put(0f)
-              .put(-0.5f).put(-0.5f).put(-0.5f).put(0f).put(0f).put(1f).put(1f).put(-1f).put(0f).put(0f)
-              .put(-0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(-1f).put(0f).put(0f)
-              .put(-0.5f).put(-0.5f).put(0.5f).put(0f).put(1f).put(1f).put(1f).put(-1f).put(0f).put(0f)
-              .put(-0.5f).put(0.5f).put(0.5f).put(0f).put(1f).put(0f).put(1f).put(-1f).put(0f).put(0f)
-              .put(-0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(-1f).put(0f).put(0f)
-              .put(0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(0f).put(-1f)
-              .put(0.5f).put(-0.5f).put(-0.5f).put(0f).put(0f).put(1f).put(1f).put(0f).put(0f).put(-1f)
-              .put(-0.5f).put(-0.5f).put(-0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(0f).put(-1f)
-              .put(-0.5f).put(-0.5f).put(-0.5f).put(0f).put(1f).put(1f).put(1f).put(0f).put(0f).put(-1f)
-              .put(-0.5f).put(0.5f).put(-0.5f).put(0f).put(1f).put(0f).put(1f).put(0f).put(0f).put(-1f)
-              .put(0.5f).put(0.5f).put(-0.5f).put(0f).put(0f).put(0f).put(1f).put(0f).put(0f).put(-1f)
-              .flip();
-
-      vbo = GL41C.glGenBuffers();
-      GL41C.glBindBuffer(GL41C.GL_ARRAY_BUFFER, vbo);
-      GL41C.glBufferData(GL41C.GL_ARRAY_BUFFER, vertices, GL41C.GL_STATIC_DRAW);
-    }
 
     shaders = new ShaderList();
     shaders.setProgram("default", new ShaderProgram());
@@ -155,14 +102,7 @@ public class Main {
     shaders.getProgram("default").setUniform("directionalLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "directionalLight"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
-    GL41C.glEnableVertexAttribArray(shaders.getProgram("default").getAttribute("position"));
-    GL41C.glVertexAttribPointer(shaders.getProgram("default").getAttribute("position"), 3, GL41C.GL_FLOAT, false, 10 * 4, 0);
-
-    GL41C.glEnableVertexAttribArray(shaders.getProgram("default").getAttribute("color"));
-    GL41C.glVertexAttribPointer(shaders.getProgram("default").getAttribute("color"), 4, GL41C.GL_FLOAT, false, 10 * 4, 3 * 4);
-
-    GL41C.glEnableVertexAttribArray(shaders.getProgram("default").getAttribute("normal"));
-    GL41C.glVertexAttribPointer(shaders.getProgram("default").getAttribute("normal"), 3, GL41C.GL_FLOAT, false, 10 * 4, 7 *4);
+    model = new Model(LoadScene.loadScene("assets/models/suzanne/suzanne.gltf"));
 
     width = MemoryUtil.memAllocInt(1);
     height = MemoryUtil.memAllocInt(1);
@@ -190,7 +130,7 @@ public class Main {
       prevModel = new Matrix4f().rotate(prevRotation, 0f, 1f, 0f);
       model = new Matrix4f().rotate(rotation, 0f, 1f, 0f);
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("model"), false, prevModel.lerp(model, (float) alpha).get(fb));
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, new Matrix4f().translate(0f, 0f, -2f).rotate((float) Math.toRadians(25f), 1f, 0f, 0f).get(fb));
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, new Matrix4f().translate(0f, 0f, -3f).get(fb));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.1f, 100f).get(fb));
     }
 
@@ -206,7 +146,7 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    GL41C.glDrawArrays(GL41C.GL_TRIANGLES, 0, 36);
+    model.draw();
 
     GLFW.glfwSwapBuffers(window);
     GLFW.glfwPollEvents();
@@ -220,11 +160,10 @@ public class Main {
   private static void exit() {
     MemoryUtil.memFree(width);
     MemoryUtil.memFree(height);
+    model.free();
     GL41C.glDeleteProgram(shaders.getProgram("default").getProgram());
     GL41C.glDeleteShader(shaders.getVertexShader("default").getShader());
     GL41C.glDeleteShader(shaders.getFragmentShader("default").getShader());
-    GL41C.glDeleteVertexArrays(vao);
-    GL41C.glDeleteBuffers(vbo);
     keyCallback.free();
     GLFW.glfwDestroyWindow(window);
     GLFW.glfwTerminate();
