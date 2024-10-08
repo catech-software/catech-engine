@@ -1,25 +1,29 @@
 package net.catech_software.engine.model;
 
-import java.util.*;
+import java.util.ArrayList;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
 public class Model {
   private AIScene scene;
-  private List<Mesh> meshes;
+  private ArrayList<Material> materials;
+  private ArrayList<Mesh> meshes;
 
   public Model(AIScene scene) {
-    int count;
     PointerBuffer buffer;
 
     this.scene = scene;
 
-    count = scene.mNumMeshes();
-    buffer = scene.mMeshes();
+    buffer = this.scene.mMaterials();
+    if (buffer == null) throw new RuntimeException("Could not load materials");
+    this.materials = new ArrayList<>();
+    for (int i = 0; i < this.scene.mNumMaterials(); i++) this.materials.add(new Material(AIMaterial.create(buffer.get(i))));
+
+    buffer = this.scene.mMeshes();
     if (buffer == null) throw new RuntimeException("Could not load meshes");
     this.meshes = new ArrayList<>();
-    for (int i = 0; i < count; i++) this.meshes.add(new Mesh(AIMesh.create(buffer.get(i))));
+    for (int i = 0; i < this.scene.mNumMeshes(); i++) this.meshes.add(new Mesh(AIMesh.create(buffer.get(i)), this.materials));
   }
 
   public void draw() {
@@ -27,14 +31,20 @@ public class Model {
   }
 
   public void free() {
+    for (int i = 0; i < this.materials.size(); i++) this.materials.get(i).free();
     for (int i = 0; i < this.meshes.size(); i++) this.meshes.get(i).free();
     Assimp.aiReleaseImport(this.scene);
     this.scene = null;
+    this.materials = null;
     this.meshes = null;
   }
 
   public AIScene getScene() {
     return scene;
+  }
+
+  public Material getMaterial(int index) {
+    return materials.get(index);
   }
 
   public Mesh getMesh(int index) {
