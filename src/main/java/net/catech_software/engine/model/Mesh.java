@@ -10,6 +10,7 @@ import org.lwjgl.system.MemoryUtil;
 
 public class Mesh {
   private AIMesh mesh;
+  private Material material;
   private final int vao, vbo, ebo;
 
   public Mesh(AIMesh mesh, ArrayList<Material> materials) {
@@ -18,6 +19,7 @@ public class Mesh {
     IntBuffer indices;
 
     this.mesh = mesh;
+    this.material = materials.get(this.mesh.mMaterialIndex());
 
     this.vao = GL41C.glGenVertexArrays();
     this.vbo = GL41C.glGenBuffers();
@@ -68,18 +70,27 @@ public class Mesh {
     GL41C.glVertexAttribPointer(3, 3, GL41C.GL_FLOAT, false, 12 * 4, 9 * 4);
 
     GL41C.glBindVertexArray(0);
+    GL41C.glBindBuffer(GL41C.GL_ARRAY_BUFFER, 0);
+    GL41C.glBindBuffer(GL41C.GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
   public void draw() {
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE0);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.material.getBaseColorTex().getTexture());
+
     GL41C.glBindVertexArray(this.vao);
     GL41C.glDrawElements(GL41C.GL_TRIANGLES, this.mesh.mNumFaces() * 3, GL41C.GL_UNSIGNED_INT, 0);
     GL41C.glBindVertexArray(0);
+
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE0);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
   }
 
   public void free() {
     GL41C.glDeleteVertexArrays(this.vao);
     GL41C.glDeleteBuffers(this.vbo);
     GL41C.glDeleteBuffers(this.ebo);
+    this.material = null;
     this.mesh = null;
   }
 }

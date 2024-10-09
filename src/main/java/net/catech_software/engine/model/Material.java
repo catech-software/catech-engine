@@ -6,21 +6,24 @@ import org.lwjgl.assimp.*;
 
 public class Material {
   private AIMaterial material;
+  private Texture baseColorTex;
 
   public Material(AIMaterial material) {
     this.material = material;
 
     try (AIString path = AIString.create()) {
-      Assimp.aiGetMaterialTexture(material, Assimp.aiTextureType_BASE_COLOR, 0, path, (IntBuffer) null, null, null, null, null, null);
-      System.out.printf("%s\n", path.dataString());
+      Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_BASE_COLOR, 0, path, (IntBuffer) null, null, null, null, null, null);
+      this.baseColorTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : null;
     }
   }
 
   public void free() {
+    if (this.baseColorTex != null) this.baseColorTex.free();
+    this.baseColorTex = null;
     this.material = null;
   }
 
-  public AIMaterial getMaterial() {
-    return material;
+  public Texture getBaseColorTex() {
+    return this.baseColorTex;
   }
 }

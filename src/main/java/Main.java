@@ -100,6 +100,7 @@ public class Main {
     shaders.getProgram("default").setUniform("lightColor", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "lightColor"));
     shaders.getProgram("default").setUniform("ambientLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "ambientLight"));
     shaders.getProgram("default").setUniform("directionalLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "directionalLight"));
+    shaders.getProgram("default").setUniform("baseColorTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "baseColorTex"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
     model = new Model(LoadScene.loadScene("assets/models/suzanne/suzanne.gltf"));
@@ -135,8 +136,9 @@ public class Main {
     }
 
     GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
-    GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
+    GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.2f);
     GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, 0.5f, 1f});
+    GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
 
     width.rewind();
     height.rewind();

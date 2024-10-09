@@ -31,23 +31,11 @@ public class Model {
   }
 
   public void free() {
-    for (int i = 0; i < this.materials.size(); i++) this.materials.get(i).free();
     for (int i = 0; i < this.meshes.size(); i++) this.meshes.get(i).free();
+    for (int i = 0; i < this.materials.size(); i++) this.materials.get(i).free();
     Assimp.aiReleaseImport(this.scene);
-    this.scene = null;
-    this.materials = null;
     this.meshes = null;
-  }
-
-  public AIScene getScene() {
-    return scene;
-  }
-
-  public Material getMaterial(int index) {
-    return materials.get(index);
-  }
-
-  public Mesh getMesh(int index) {
-    return meshes.get(index);
+    this.materials = null;
+    this.scene = null;
   }
 }
