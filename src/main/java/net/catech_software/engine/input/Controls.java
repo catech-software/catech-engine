@@ -7,4 +7,6 @@ public class Controls {
   public boolean moveRight = false;
   public boolean moveUp = false;
   public boolean moveDown = false;
+  public double mouseX;
+  public double mouseY;
 }

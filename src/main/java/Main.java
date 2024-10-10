@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -25,8 +26,8 @@ public class Main {
   private static Model model;
   private static IntBuffer width, height;
   private static int fpsCount, upsCount;
-  private static Controls controls = new Controls();
-  private static Player player = new Player();
+  private static final Controls controls = new Controls();
+  private static final Player player = new Player();
 
   private static final GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
 
@@ -75,6 +76,14 @@ public class Main {
     GLFW.glfwSetWindowPos(window, (vidMode.width() - 640) / 2, (vidMode.height() - 480) / 2);
 
     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      DoubleBuffer mouseX = stack.mallocDouble(1);
+      DoubleBuffer mouseY = stack.mallocDouble(1);
+
+      GLFW.glfwGetCursorPos(window, mouseX, mouseY);
+      controls.mouseX = mouseX.get();
+      controls.mouseY = mouseY.get();
+    }
     GLFW.glfwSetKeyCallback(window, keyCallback);
 
     GLFW.glfwMakeContextCurrent(window);
