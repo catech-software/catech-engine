@@ -12,8 +12,10 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.joml.Matrix4f;
 
+import net.catech_software.engine.input.Controls;
 import net.catech_software.engine.model.LoadScene;
 import net.catech_software.engine.model.Model;
+import net.catech_software.engine.object.Player;
 import net.catech_software.engine.render.shader.*;
 import net.catech_software.util.Resource;
 
@@ -22,8 +24,9 @@ public class Main {
   private static ShaderList shaders;
   private static Model model;
   private static IntBuffer width, height;
-  private static float prevRotation, rotation = 0f;
   private static int fpsCount, upsCount;
+  private static Controls controls = new Controls();
+  private static Player player = new Player();
 
   private static final GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
 
@@ -31,6 +34,24 @@ public class Main {
     @Override
     public void invoke(long window, int key, int scancode, int action, int mods) {
       if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_PRESS) GLFW.glfwSetWindowShouldClose(window, true);
+
+      if (key == GLFW.GLFW_KEY_W && action == GLFW.GLFW_PRESS) controls.moveForward = true;
+      if (key == GLFW.GLFW_KEY_W && action == GLFW.GLFW_RELEASE) controls.moveForward = false;
+
+      if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_PRESS) controls.moveBack = true;
+      if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_RELEASE) controls.moveBack = false;
+
+      if (key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_PRESS) controls.moveLeft = true;
+      if (key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_RELEASE) controls.moveLeft = false;
+
+      if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_PRESS) controls.moveRight = true;
+      if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_RELEASE) controls.moveRight = false;
+
+      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) controls.moveUp = true;
+      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) controls.moveUp = false;
+
+      if (key == GLFW.GLFW_KEY_LEFT_CONTROL && action == GLFW.GLFW_PRESS) controls.moveDown = true;
+      if (key == GLFW.GLFW_KEY_LEFT_CONTROL && action == GLFW.GLFW_RELEASE) controls.moveDown = false;
     }
   };
 
@@ -53,6 +74,7 @@ public class Main {
     if (vidMode == null) throw new RuntimeException("Failed to get video mode");
     GLFW.glfwSetWindowPos(window, (vidMode.width() - 640) / 2, (vidMode.height() - 480) / 2);
 
+    GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
     GLFW.glfwSetKeyCallback(window, keyCallback);
 
     GLFW.glfwMakeContextCurrent(window);
@@ -112,8 +134,13 @@ public class Main {
   private static void input() {}
 
   private static void update(double delta) {
-    prevRotation = rotation;
-    rotation += (float) (delta * Math.toRadians(50f));
+    player.prevPosition = player.position;
+    if (controls.moveForward) player.position.add(0f, 0f, 1.3f * (float) delta);
+    if (controls.moveBack) player.position.add(0f, 0f, -1.3f * (float) delta);
+    if (controls.moveLeft) player.position.add(1.3f * (float) delta, 0f, 0f);
+    if (controls.moveRight) player.position.add(-1.3f * (float) delta, 0f, 0f);
+    if (controls.moveUp) player.position.add(0f, -1.3f * (float) delta, 0f);
+    if (controls.moveDown) player.position.add(0f, 1.3f * (float) delta, 0f);
 
     upsCount++;
   }
@@ -125,19 +152,19 @@ public class Main {
     ratio = width.get() / (float) height.get();
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
-      Matrix4f prevModel, model;
+      Matrix4f prevView, currView;
       FloatBuffer fb = stack.mallocFloat(16);
 
-      prevModel = new Matrix4f().rotate(prevRotation, 0f, 1f, 0f);
-      model = new Matrix4f().rotate(rotation, 0f, 1f, 0f);
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("model"), false, prevModel.lerp(model, (float) alpha).get(fb));
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, new Matrix4f().translate(0f, 0f, -3f).get(fb));
+      prevView = new Matrix4f().translate(player.prevPosition);
+      currView = new Matrix4f().translate(player.position);
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("model"), false, new Matrix4f().translate(0f, 0f, -3f).get(fb));
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).get(fb));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.1f, 100f).get(fb));
     }
 
     GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
-    GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.2f);
-    GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, 0.5f, 1f});
+    GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
+    GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -0.5f, -1f});
     GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
 
     width.rewind();
