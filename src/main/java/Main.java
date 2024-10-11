@@ -3,6 +3,9 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -140,16 +143,32 @@ public class Main {
     height = MemoryUtil.memAllocInt(1);
   }
 
-  private static void input() {}
+  private static void input() {
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      DoubleBuffer mouseX = stack.mallocDouble(1);
+      DoubleBuffer mouseY = stack.mallocDouble(1);
+      double newMouseX, newMouseY;
+
+      GLFW.glfwGetCursorPos(window, mouseX, mouseY);
+      newMouseX = mouseX.get();
+      newMouseY = mouseY.get();
+      controls.deltaX = newMouseX - controls.mouseX;
+      controls.deltaY = newMouseY - controls.mouseY;
+      controls.mouseX = newMouseX;
+      controls.mouseY = newMouseY;
+    }
+  }
 
   private static void update(double delta) {
-    player.prevPosition = player.position;
-    if (controls.moveForward) player.position.add(0f, 0f, 1.3f * (float) delta);
-    if (controls.moveBack) player.position.add(0f, 0f, -1.3f * (float) delta);
-    if (controls.moveLeft) player.position.add(1.3f * (float) delta, 0f, 0f);
-    if (controls.moveRight) player.position.add(-1.3f * (float) delta, 0f, 0f);
-    if (controls.moveUp) player.position.add(0f, -1.3f * (float) delta, 0f);
-    if (controls.moveDown) player.position.add(0f, 1.3f * (float) delta, 0f);
+    player.prevRotation = new Quaternionf(player.rotation);
+
+    player.prevPosition = new Vector3f(player.position);
+    if (controls.moveForward) player.position.add(0f, 0f, -1.3f * (float) delta);
+    if (controls.moveBack) player.position.add(0f, 0f, 1.3f * (float) delta);
+    if (controls.moveLeft) player.position.add(-1.3f * (float) delta, 0f, 0f);
+    if (controls.moveRight) player.position.add(1.3f * (float) delta, 0f, 0f);
+    if (controls.moveDown) player.position.add(0f, -1.3f * (float) delta, 0f);
+    if (controls.moveUp) player.position.add(0f, 1.3f * (float) delta, 0f);
 
     upsCount++;
   }
@@ -164,8 +183,8 @@ public class Main {
       Matrix4f prevView, currView;
       FloatBuffer fb = stack.mallocFloat(16);
 
-      prevView = new Matrix4f().translate(player.prevPosition);
-      currView = new Matrix4f().translate(player.position);
+      prevView = new Matrix4f().rotate(new Quaternionf(player.prevRotation).invert()).translate(new Vector3f(player.prevPosition).negate());
+      currView = new Matrix4f().rotate(new Quaternionf(player.rotation).invert()).translate(new Vector3f(player.position).negate());
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("model"), false, new Matrix4f().translate(0f, 0f, -3f).get(fb));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).get(fb));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.1f, 100f).get(fb));
@@ -233,7 +252,7 @@ public class Main {
       render(accumulator * 30d);
 
       if (timeCount >= 1f) {
-        System.out.printf("FPS: %d, UPS: %d\n", fpsCount, upsCount);
+        System.out.printf("FPS: %d, UPS: %d, %f %f\n", fpsCount, upsCount, controls.mouseX, controls.mouseY);
 
         fpsCount = 0;
         upsCount = 0;
