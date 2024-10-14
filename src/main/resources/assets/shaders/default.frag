@@ -19,7 +19,7 @@ void main() {
   vec3 normal = normalize(vertNormal);
   vec3 lightDirection = normalize(-directionalLight);
 
-  vec3 ambient = ambientLight * lightColor;
+  vec3 ambient = ambientLight * lightColor * texture(baseColorTex, vertTexCoord).rgb;
 
   vec3 diffuse = clamp(dot(normal, lightDirection), 0.0, 1.0) * lightColor;
 

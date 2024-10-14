@@ -19,5 +19,5 @@ void main() {
   vertPosition = vec3(view * model * vec4(position, 1.0));
   vertColor = color;
   vertTexCoord = texCoord;
-  vertNormal = mat3(transpose(inverse(view * model))) * normal;
+  vertNormal = mat3(transpose(inverse(model))) * normal;
 }
