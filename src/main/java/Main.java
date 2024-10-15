@@ -1,11 +1,10 @@
 import java.io.IOException;
+import java.lang.Math;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -14,7 +13,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL41C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.joml.Matrix4f;
 
 import net.catech_software.engine.input.Controls;
 import net.catech_software.engine.model.LoadScene;
@@ -74,19 +72,21 @@ public class Main {
     window = GLFW.glfwCreateWindow(640, 480, "Foobar", MemoryUtil.NULL, MemoryUtil.NULL);
     if (window == MemoryUtil.NULL) throw new RuntimeException("Failed to create the GLFW window");
 
+    width = MemoryUtil.memAllocInt(1);
+    height = MemoryUtil.memAllocInt(1);
+    GLFW.glfwGetFramebufferSize(window, width, height);
+
     vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
     if (vidMode == null) throw new RuntimeException("Failed to get video mode");
     GLFW.glfwSetWindowPos(window, (vidMode.width() - 640) / 2, (vidMode.height() - 480) / 2);
 
     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_DISABLED);
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      DoubleBuffer mouseX = stack.mallocDouble(1);
-      DoubleBuffer mouseY = stack.mallocDouble(1);
-
-      GLFW.glfwGetCursorPos(window, mouseX, mouseY);
-      controls.mouseX = mouseX.get();
-      controls.mouseY = mouseY.get();
-    }
+    GLFW.glfwSetInputMode(window, GLFW.GLFW_RAW_MOUSE_MOTION, GLFW.GLFW_TRUE);
+    controls.mouseX = width.get() / 2d;
+    controls.mouseY = height.get() / 2d;
+    width.rewind();
+    height.rewind();
+    GLFW.glfwSetCursorPos(window, controls.mouseX, controls.mouseY);
     GLFW.glfwSetKeyCallback(window, keyCallback);
 
     GLFW.glfwMakeContextCurrent(window);
@@ -138,9 +138,6 @@ public class Main {
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
     model = new Model(LoadScene.loadScene("assets/models/suzanne/suzanne.gltf"));
-
-    width = MemoryUtil.memAllocInt(1);
-    height = MemoryUtil.memAllocInt(1);
   }
 
   private static void input() {
@@ -163,10 +160,10 @@ public class Main {
     Vector3f camera = new Vector3f();
 
     player.prevRotation = new Quaternionf(player.rotation);
-    player.rotation.rotateY((float) (-controls.deltaX * delta));
+    player.rotation.rotateY((float) (-controls.deltaX * delta) * 0.2f);
 
     player.prevCamera = new Quaternionf(player.camera);
-    player.camera.rotateX((float) (-controls.deltaY * delta));
+    player.camera.rotateX((float) (-controls.deltaY * delta) * 0.2f);
     player.camera.getEulerAnglesXYZ(camera);
     if (camera.x() < -Math.PI / 2) player.camera.rotationX((float) -Math.PI / 2);
     if (camera.x() > Math.PI / 2) player.camera.rotationX((float) Math.PI / 2);

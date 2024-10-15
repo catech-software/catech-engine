@@ -16,7 +16,7 @@ uniform mat4 projection;
 
 void main() {
   gl_Position = projection * view * model * vec4(position, 1.0);
-  vertPosition = vec3(view * model * vec4(position, 1.0));
+  vertPosition = vec3(model * vec4(position, 1.0));
   vertColor = color;
   vertTexCoord = texCoord;
   vertNormal = mat3(transpose(inverse(model))) * normal;

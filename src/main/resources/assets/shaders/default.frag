@@ -7,6 +7,7 @@ in vec3 vertNormal;
 
 layout (location = 0) out vec4 fragColor;
 
+uniform vec3 viewPosition;
 uniform vec3 lightColor;
 uniform float ambientLight;
 uniform vec3 directionalLight;
@@ -19,7 +20,7 @@ void main() {
   vec3 normal = normalize(vertNormal);
   vec3 lightDirection = normalize(-directionalLight);
 
-  vec3 ambient = ambientLight * lightColor * texture(baseColorTex, vertTexCoord).rgb;
+  vec3 ambient = ambientLight * lightColor;
 
   vec3 diffuse = clamp(dot(normal, lightDirection), 0.0, 1.0) * lightColor;
 

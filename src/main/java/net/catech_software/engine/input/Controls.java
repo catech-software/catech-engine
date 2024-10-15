@@ -10,6 +10,6 @@ public class Controls {
 
   public double mouseX;
   public double mouseY;
-  public double deltaX;
-  public double deltaY;
+  public double deltaX = 0d;
+  public double deltaY = 0d;
 }
