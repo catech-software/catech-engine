@@ -24,7 +24,7 @@ void main() {
 
   vec3 diffuse = clamp(dot(normal, lightDirection), 0.0, 1.0) * lightColor;
 
-  vec3 viewDirection = normalize(-vertPosition);
+  vec3 viewDirection = normalize(viewPosition - vertPosition);
   vec3 reflectDirection = reflect(-lightDirection, normal);
   vec3 specular = pow(clamp(dot(viewDirection, reflectDirection), 0.0, 1.0), 32) * lightColor;
 

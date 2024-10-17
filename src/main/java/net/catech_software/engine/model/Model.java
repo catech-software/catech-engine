@@ -9,6 +9,7 @@ public class Model {
   private AIScene scene;
   private ArrayList<Material> materials;
   private ArrayList<Mesh> meshes;
+  private Node rootNode;
 
   public Model(AIScene scene) {
     PointerBuffer buffer;
@@ -24,6 +25,8 @@ public class Model {
     if (buffer == null) throw new RuntimeException("Could not load meshes");
     this.meshes = new ArrayList<>();
     for (int i = 0; i < this.scene.mNumMeshes(); i++) this.meshes.add(new Mesh(AIMesh.create(buffer.get(i)), this.materials));
+
+    this.rootNode = new Node(this.scene.mRootNode());
   }
 
   public void draw() {
@@ -31,9 +34,11 @@ public class Model {
   }
 
   public void free() {
+    this.rootNode.free();
     for (int i = 0; i < this.meshes.size(); i++) this.meshes.get(i).free();
     for (int i = 0; i < this.materials.size(); i++) this.materials.get(i).free();
     Assimp.aiReleaseImport(this.scene);
+    this.rootNode = null;
     this.meshes = null;
     this.materials = null;
     this.scene = null;

@@ -131,13 +131,14 @@ public class Main {
     shaders.getProgram("default").setUniform("model", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "model"));
     shaders.getProgram("default").setUniform("view", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "view"));
     shaders.getProgram("default").setUniform("projection", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "projection"));
+    shaders.getProgram("default").setUniform("viewPosition", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "viewPosition"));
     shaders.getProgram("default").setUniform("lightColor", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "lightColor"));
     shaders.getProgram("default").setUniform("ambientLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "ambientLight"));
     shaders.getProgram("default").setUniform("directionalLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "directionalLight"));
     shaders.getProgram("default").setUniform("baseColorTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "baseColorTex"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
-    model = new Model(LoadScene.loadScene("assets/models/suzanne/suzanne.gltf"));
+    model = new Model(LoadScene.loadScene("assets/models/WaterBottle/WaterBottle.gltf"));
   }
 
   private static void input() {
@@ -199,10 +200,15 @@ public class Main {
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.1f, 100f).get(fb));
     }
 
-    GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
-    GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
-    GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -0.5f, -1f});
-    GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      FloatBuffer fb = stack.mallocFloat(3);
+
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(fb));
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
+      GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -0.5f, -1f});
+      GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
+    }
 
     width.rewind();
     height.rewind();
