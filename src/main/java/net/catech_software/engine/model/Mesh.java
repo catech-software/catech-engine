@@ -4,14 +4,18 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
+import org.joml.Matrix4f;
 import org.lwjgl.assimp.*;
 import org.lwjgl.opengl.GL41C;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 public class Mesh {
   private AIMesh mesh;
   private Material material;
-  private final int vao, vbo, ebo;
+  private final int vao = GL41C.glGenVertexArrays();
+  private final int vbo = GL41C.glGenBuffers();
+  private final int ebo = GL41C.glGenBuffers();
 
   public Mesh(AIMesh mesh, ArrayList<Material> materials) {
     int count;
@@ -20,10 +24,6 @@ public class Mesh {
 
     this.mesh = mesh;
     this.material = materials.get(this.mesh.mMaterialIndex());
-
-    this.vao = GL41C.glGenVertexArrays();
-    this.vbo = GL41C.glGenBuffers();
-    this.ebo = GL41C.glGenBuffers();
 
     GL41C.glBindVertexArray(this.vao);
 
@@ -74,9 +74,21 @@ public class Mesh {
     GL41C.glBindBuffer(GL41C.GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
-  public void draw() {
+  public void draw(int model, Matrix4f transformation) {
     GL41C.glActiveTexture(GL41C.GL_TEXTURE0);
     GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.material.getBaseColorTex().getTexture());
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE1);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.material.getEmissiveTex().getTexture());
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE2);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.material.getNormalTex().getTexture());
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE3);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.material.getOcclusionRoughnessMetallicTex().getTexture());
+
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      FloatBuffer mat4 = stack.mallocFloat(16);
+
+      GL41C.glUniformMatrix4fv(model, false, transformation.get(mat4));
+    }
 
     GL41C.glBindVertexArray(this.vao);
     GL41C.glDrawElements(GL41C.GL_TRIANGLES, this.mesh.mNumFaces() * 3, GL41C.GL_UNSIGNED_INT, 0);

@@ -69,6 +69,7 @@ public class Main {
     GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1);
     GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, GLFW.GLFW_OPENGL_CORE_PROFILE);
     GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GLFW.GLFW_TRUE);
+    GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 8);
     window = GLFW.glfwCreateWindow(640, 480, "Foobar", MemoryUtil.NULL, MemoryUtil.NULL);
     if (window == MemoryUtil.NULL) throw new RuntimeException("Failed to create the GLFW window");
 
@@ -91,8 +92,6 @@ public class Main {
 
     GLFW.glfwMakeContextCurrent(window);
     GL.createCapabilities();
-
-    GLFW.glfwSwapInterval(1);
 
     shaders = new ShaderList();
     shaders.setProgram("default", new ShaderProgram());
@@ -136,6 +135,9 @@ public class Main {
     shaders.getProgram("default").setUniform("ambientLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "ambientLight"));
     shaders.getProgram("default").setUniform("directionalLight", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "directionalLight"));
     shaders.getProgram("default").setUniform("baseColorTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "baseColorTex"));
+    shaders.getProgram("default").setUniform("emissiveTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "emissiveTex"));
+    shaders.getProgram("default").setUniform("normalTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "normalTex"));
+    shaders.getProgram("default").setUniform("occlusionRoughnessMetallicTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "occlusionRoughnessMetallicTex"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
     model = new Model(LoadScene.loadScene("assets/models/WaterBottle/WaterBottle.gltf"));
@@ -191,23 +193,23 @@ public class Main {
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
       Matrix4f prevView, currView;
-      FloatBuffer fb = stack.mallocFloat(16);
+      FloatBuffer mat4 = stack.mallocFloat(16);
+      FloatBuffer vec3 = stack.mallocFloat(3);
 
       prevView = new Matrix4f().rotate(new Quaternionf(player.prevCamera).invert()).rotate(new Quaternionf(player.prevRotation).invert()).translate(new Vector3f(player.prevPosition).negate());
       currView = new Matrix4f().rotate(new Quaternionf(player.camera).invert()).rotate(new Quaternionf(player.rotation).invert()).translate(new Vector3f(player.position).negate());
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("model"), false, new Matrix4f().translate(0f, 0f, -3f).get(fb));
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).get(fb));
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.1f, 100f).get(fb));
-    }
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).get(mat4));
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.01f, 100f).get(mat4));
 
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      FloatBuffer fb = stack.mallocFloat(3);
-
-      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(fb));
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(vec3));
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
       GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -0.5f, -1f});
+
       GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
+      GL41C.glUniform1i(shaders.getProgram("default").getUniform("emissiveTex"), 1);
+      GL41C.glUniform1i(shaders.getProgram("default").getUniform("normalTex"), 2);
+      GL41C.glUniform1i(shaders.getProgram("default").getUniform("occlusionRoughnessMetallicTex"), 3);
     }
 
     width.rewind();
@@ -218,7 +220,7 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    model.draw();
+    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f));
 
     GLFW.glfwSwapBuffers(window);
     GLFW.glfwPollEvents();

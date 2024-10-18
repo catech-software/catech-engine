@@ -1,6 +1,6 @@
 package net.catech_software.engine.render.shader;
 
-abstract class Shader {
+public abstract class Shader {
   private int shader;
   private String source;
 

@@ -2,7 +2,7 @@ package net.catech_software.engine.model;
 
 import java.util.ArrayList;
 
-import org.lwjgl.PointerBuffer;
+import org.joml.Matrix4f;
 import org.lwjgl.assimp.*;
 
 public class Model {
@@ -12,25 +12,19 @@ public class Model {
   private Node rootNode;
 
   public Model(AIScene scene) {
-    PointerBuffer buffer;
-
     this.scene = scene;
 
-    buffer = this.scene.mMaterials();
-    if (buffer == null) throw new RuntimeException("Could not load materials");
     this.materials = new ArrayList<>();
-    for (int i = 0; i < this.scene.mNumMaterials(); i++) this.materials.add(new Material(AIMaterial.create(buffer.get(i))));
+    for (int i = 0; i < this.scene.mNumMaterials(); i++) this.materials.add(new Material(AIMaterial.create(this.scene.mMaterials().get(i))));
 
-    buffer = this.scene.mMeshes();
-    if (buffer == null) throw new RuntimeException("Could not load meshes");
     this.meshes = new ArrayList<>();
-    for (int i = 0; i < this.scene.mNumMeshes(); i++) this.meshes.add(new Mesh(AIMesh.create(buffer.get(i)), this.materials));
+    for (int i = 0; i < this.scene.mNumMeshes(); i++) this.meshes.add(new Mesh(AIMesh.create(this.scene.mMeshes().get(i)), this.materials));
 
-    this.rootNode = new Node(this.scene.mRootNode());
+    this.rootNode = new Node(this.scene.mRootNode(), new Matrix4f(), this.meshes);
   }
 
-  public void draw() {
-    for (int i = 0; i < this.meshes.size(); i++) this.meshes.get(i).draw();
+  public void draw(int model, Matrix4f transformation) {
+    this.rootNode.draw(model, transformation);
   }
 
   public void free() {

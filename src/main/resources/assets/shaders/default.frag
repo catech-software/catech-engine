@@ -13,9 +13,12 @@ uniform float ambientLight;
 uniform vec3 directionalLight;
 
 uniform sampler2D baseColorTex;
+uniform sampler2D emissiveTex;
+uniform sampler2D normalTex;
+uniform sampler2D occlusionRoughnessMetallicTex;
 
 void main() {
-  vec4 color = mix(vertColor, texture(baseColorTex, vertTexCoord), texture(baseColorTex, vertTexCoord).a);
+  vec3 color = mix(vertColor.rgb, texture(baseColorTex, vertTexCoord).rgb, texture(baseColorTex, vertTexCoord).a);
 
   vec3 normal = normalize(vertNormal);
   vec3 lightDirection = normalize(-directionalLight);
@@ -28,5 +31,5 @@ void main() {
   vec3 reflectDirection = reflect(-lightDirection, normal);
   vec3 specular = pow(clamp(dot(viewDirection, reflectDirection), 0.0, 1.0), 32) * lightColor;
 
-  fragColor = vec4((ambient + diffuse + specular) * color.rgb, color.a);
+  fragColor = vec4((ambient + diffuse + specular) * color, vertColor.a + texture(baseColorTex, vertTexCoord).a) + texture(emissiveTex, vertTexCoord);
 }
