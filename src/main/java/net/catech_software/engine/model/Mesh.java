@@ -29,16 +29,21 @@ public class Mesh {
 
     GL41C.glBindBuffer(GL41C.GL_ARRAY_BUFFER, this.vbo);
     count = mesh.mNumVertices();
-    vertices = MemoryUtil.memAllocFloat(count * 12);
+    vertices = MemoryUtil.memAllocFloat(count * 18);
     for (int i = 0; i < count; i++) {
       AIVector3D vertex = mesh.mVertices().get(i);
       AIVector3D texCoord = mesh.mTextureCoords(0).get(i);
+      AIVector3D tangent = mesh.mTangents().get(i);
+      AIVector3D bitangent = mesh.mBitangents().get(i);
       AIVector3D normal = mesh.mNormals().get(i);
 
-      // Position: 3 floats (xyz), Color: 4 floats (rgba), Texture: 2 floats (uv), Normal: 3 floats (xyz)
+      // Position: 3 floats (xyz), Color: 4 floats (rgba), Texture: 2 floats (uv),
+      // Tangent: 3 floats (xyz), Bitangent: 3 floats (xyz), Normal: 3 floats (xyz)
       vertices.put(vertex.x()).put(vertex.y()).put(vertex.z())
               .put(1f).put(1f).put(1f).put(1f)
               .put(texCoord.x()).put(texCoord.y())
+              .put(tangent.x()).put(tangent.y()).put(tangent.z())
+              .put(bitangent.x()).put(bitangent.y()).put(bitangent.z())
               .put(normal.x()).put(normal.y()).put(normal.z());
     }
     vertices.flip();
@@ -58,16 +63,17 @@ public class Mesh {
     MemoryUtil.memFree(indices);
 
     GL41C.glEnableVertexAttribArray(0);
-    GL41C.glVertexAttribPointer(0, 3, GL41C.GL_FLOAT, false, 12 * 4, 0);
-
+    GL41C.glVertexAttribPointer(0, 3, GL41C.GL_FLOAT, false, 18 * 4, 0);
     GL41C.glEnableVertexAttribArray(1);
-    GL41C.glVertexAttribPointer(1, 4, GL41C.GL_FLOAT, false, 12 * 4, 3 * 4);
-
+    GL41C.glVertexAttribPointer(1, 4, GL41C.GL_FLOAT, false, 18 * 4, 3 * 4);
     GL41C.glEnableVertexAttribArray(2);
-    GL41C.glVertexAttribPointer(2, 2, GL41C.GL_FLOAT, false, 12 * 4, 7 * 4);
-
+    GL41C.glVertexAttribPointer(2, 2, GL41C.GL_FLOAT, false, 18 * 4, 7 * 4);
     GL41C.glEnableVertexAttribArray(3);
-    GL41C.glVertexAttribPointer(3, 3, GL41C.GL_FLOAT, false, 12 * 4, 9 * 4);
+    GL41C.glVertexAttribPointer(3, 3, GL41C.GL_FLOAT, false, 18 * 4, 9 * 4);
+    GL41C.glEnableVertexAttribArray(4);
+    GL41C.glVertexAttribPointer(4, 3, GL41C.GL_FLOAT, false, 18 * 4, 12 * 4);
+    GL41C.glEnableVertexAttribArray(5);
+    GL41C.glVertexAttribPointer(5, 3, GL41C.GL_FLOAT, false, 18 * 4, 15 * 4);
 
     GL41C.glBindVertexArray(0);
     GL41C.glBindBuffer(GL41C.GL_ARRAY_BUFFER, 0);

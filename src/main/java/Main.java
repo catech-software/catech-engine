@@ -126,6 +126,7 @@ public class Main {
 
     shaders.getProgram("default").setAttribute("position", GL41C.glGetAttribLocation(shaders.getProgram("default").getProgram(), "position"));
     shaders.getProgram("default").setAttribute("color", GL41C.glGetAttribLocation(shaders.getProgram("default").getProgram(), "color"));
+    shaders.getProgram("default").setAttribute("texCoord", GL41C.glGetAttribLocation(shaders.getProgram("default").getProgram(), "texCoord"));
     shaders.getProgram("default").setAttribute("normal", GL41C.glGetAttribLocation(shaders.getProgram("default").getProgram(), "normal"));
     shaders.getProgram("default").setUniform("model", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "model"));
     shaders.getProgram("default").setUniform("view", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "view"));
@@ -220,7 +221,7 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f));
+    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f).rotate((float) -Math.PI / 3f, 0f, 1f, 0f));
 
     GLFW.glfwSwapBuffers(window);
     GLFW.glfwPollEvents();
