@@ -25,6 +25,7 @@ public class Main {
   private static long window;
   private static ShaderList shaders;
   private static Model model;
+  private static Model level;
   private static IntBuffer width, height;
   private static int fpsCount, upsCount;
   private static final Controls controls = new Controls();
@@ -142,6 +143,7 @@ public class Main {
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
     model = new Model(LoadScene.loadScene("assets/models/WaterBottle/WaterBottle.gltf"));
+    level = new Model(LoadScene.loadScene("assets/models/map0/map0.gltf"));
   }
 
   private static void input() {
@@ -199,7 +201,7 @@ public class Main {
 
       prevView = new Matrix4f().rotate(new Quaternionf(player.prevCamera).invert()).rotate(new Quaternionf(player.prevRotation).invert()).translate(new Vector3f(player.prevPosition).negate());
       currView = new Matrix4f().rotate(new Quaternionf(player.camera).invert()).rotate(new Quaternionf(player.rotation).invert()).translate(new Vector3f(player.position).negate());
-      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).get(mat4));
+      GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).translate(0f, -1.59f, 0f).get(mat4));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.01f, 100f).get(mat4));
 
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(vec3));
@@ -221,7 +223,8 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f).rotate((float) -Math.PI / 3f, 0f, 1f, 0f));
+    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f));
+    level.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f());
 
     GLFW.glfwSwapBuffers(window);
     GLFW.glfwPollEvents();
@@ -235,7 +238,7 @@ public class Main {
   private static void exit() {
     MemoryUtil.memFree(width);
     MemoryUtil.memFree(height);
-    model.free();
+    level.free();
     GL41C.glDeleteProgram(shaders.getProgram("default").getProgram());
     GL41C.glDeleteShader(shaders.getVertexShader("default").getShader());
     GL41C.glDeleteShader(shaders.getFragmentShader("default").getShader());

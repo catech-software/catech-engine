@@ -14,6 +14,8 @@ import net.catech_software.util.Resource;
 public class Texture {
   private final int texture;
 
+  public static final Texture blank = new Texture("assets/textures/blank.png");
+
   public Texture(String path) {
     this.texture = GL41C.glGenTextures();
     GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.texture);

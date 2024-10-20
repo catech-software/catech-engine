@@ -16,16 +16,16 @@ public class Material {
 
     try (AIString path = AIString.create()) {
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_BASE_COLOR, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.baseColorTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : null;
+      this.baseColorTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_EMISSIVE, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.emissiveTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : null;
+      this.emissiveTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_NORMALS, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.normalTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : null;
+      this.normalTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_UNKNOWN, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.occlusionRoughnessMetallicTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : null;
+      this.occlusionRoughnessMetallicTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
     }
   }
 

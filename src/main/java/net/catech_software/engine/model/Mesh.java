@@ -28,14 +28,14 @@ public class Mesh {
     GL41C.glBindVertexArray(this.vao);
 
     GL41C.glBindBuffer(GL41C.GL_ARRAY_BUFFER, this.vbo);
-    count = mesh.mNumVertices();
+    count = this.mesh.mNumVertices();
     vertices = MemoryUtil.memAllocFloat(count * 18);
     for (int i = 0; i < count; i++) {
-      AIVector3D vertex = mesh.mVertices().get(i);
-      AIVector3D texCoord = mesh.mTextureCoords(0).get(i);
-      AIVector3D tangent = mesh.mTangents().get(i);
-      AIVector3D bitangent = mesh.mBitangents().get(i);
-      AIVector3D normal = mesh.mNormals().get(i);
+      AIVector3D vertex = this.mesh.mVertices().get(i);
+      AIVector3D texCoord = this.mesh.mTextureCoords(0).get(i);
+      AIVector3D tangent = this.mesh.mTangents().get(i);
+      AIVector3D bitangent = this.mesh.mBitangents().get(i);
+      AIVector3D normal = this.mesh.mNormals().get(i);
 
       // Position: 3 floats (xyz), Color: 4 floats (rgba), Texture: 2 floats (uv),
       // Tangent: 3 floats (xyz), Bitangent: 3 floats (xyz), Normal: 3 floats (xyz)
@@ -101,6 +101,12 @@ public class Mesh {
     GL41C.glBindVertexArray(0);
 
     GL41C.glActiveTexture(GL41C.GL_TEXTURE0);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE1);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE2);
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
+    GL41C.glActiveTexture(GL41C.GL_TEXTURE3);
     GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
   }
 

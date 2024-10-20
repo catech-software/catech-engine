@@ -23,7 +23,7 @@ void main() {
   vec3 color = mix(vertColor.rgb, texture(baseColorTex, vertTexCoord).rgb, texture(baseColorTex, vertTexCoord).a);
 
   mat3 tbn = mat3(normalize(vertTangent), normalize(vertBitangent), normalize(vertNormal));
-  vec3 normal = normalize(tbn * (texture(normalTex, vertTexCoord).rgb * 2.0 - 1.0));
+  vec3 normal = normalize(tbn * (mix(vec3(0.5, 0.5, 1.0), texture(normalTex, vertTexCoord).rgb, texture(normalTex, vertTexCoord).a) * 2.0 - 1.0));
   vec3 lightDirection = normalize(-directionalLight);
 
   vec3 ambient = ambientLight * lightColor;
@@ -34,5 +34,5 @@ void main() {
   vec3 reflectDirection = reflect(-lightDirection, normal);
   vec3 specular = pow(clamp(dot(viewDirection, reflectDirection), 0.0, 1.0), 32) * lightColor;
 
-  fragColor = vec4((ambient + diffuse + specular) * texture(occlusionRoughnessMetallicTex, vertTexCoord).r * color, vertColor.a + texture(baseColorTex, vertTexCoord).a) + texture(emissiveTex, vertTexCoord);
+  fragColor = vec4((ambient + diffuse + specular) * mix(1.0, texture(occlusionRoughnessMetallicTex, vertTexCoord).r, texture(occlusionRoughnessMetallicTex, vertTexCoord).a) * color, vertColor.a + texture(baseColorTex, vertTexCoord).a) + texture(emissiveTex, vertTexCoord);
 }

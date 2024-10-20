@@ -58,7 +58,13 @@ public class LoadScene {
                        file.SeekProc().free();
                      });
 
-    scene = Assimp.aiImportFileEx(path, Assimp.aiProcess_JoinIdenticalVertices | Assimp.aiProcess_Triangulate, fileIO);
+    scene = Assimp.aiImportFileEx(path, Assimp.aiProcess_SplitLargeMeshes |
+                                        Assimp.aiProcess_JoinIdenticalVertices |
+                                        Assimp.aiProcess_Triangulate |
+                                        Assimp.aiProcess_GenUVCoords |
+                                        Assimp.aiProcess_GenNormals |
+                                        Assimp.aiProcess_CalcTangentSpace |
+                                        Assimp.aiProcess_SortByPType, fileIO);
     fileIO.OpenProc().free();
     fileIO.CloseProc().free();
     return scene;
