@@ -14,14 +14,14 @@ import net.catech_software.util.Resource;
 public class Texture {
   private final int texture;
 
-  public static final Texture blank = new Texture("assets/textures/blank.png");
+  public static final Texture blank = new Texture();
 
   public Texture(String path) {
     this.texture = GL41C.glGenTextures();
     GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.texture);
     GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41C.GL_TEXTURE_WRAP_S, GL41C.GL_REPEAT);
     GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41C.GL_TEXTURE_WRAP_T, GL41C.GL_REPEAT);
-    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41.GL_TEXTURE_MIN_FILTER, GL41C.GL_LINEAR);
+    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41.GL_TEXTURE_MIN_FILTER, GL41C.GL_LINEAR_MIPMAP_LINEAR);
     GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41.GL_TEXTURE_MAG_FILTER, GL41C.GL_LINEAR);
 
     try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -40,6 +40,24 @@ public class Texture {
       STBImage.stbi_image_free(image);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);
+  }
+
+  private Texture() {
+    this.texture = GL41C.glGenTextures();
+    GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, this.texture);
+    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41C.GL_TEXTURE_WRAP_S, GL41C.GL_REPEAT);
+    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41C.GL_TEXTURE_WRAP_T, GL41C.GL_REPEAT);
+    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41.GL_TEXTURE_MIN_FILTER, GL41C.GL_NEAREST);
+    GL41C.glTexParameteri(GL41C.GL_TEXTURE_2D, GL41.GL_TEXTURE_MAG_FILTER, GL41C.GL_NEAREST);
+
+    try (MemoryStack stack = MemoryStack.stackPush()) {
+      ByteBuffer data = stack.malloc(4);
+
+      data.put((byte) 0).put((byte) 0).put((byte) 0).put((byte) 0);
+      GL41C.glTexImage2D(GL41C.GL_TEXTURE_2D, 0, GL41C.GL_RGBA8, 1, 1, 0, GL41C.GL_RGBA, GL41C.GL_UNSIGNED_BYTE, data);
     }
 
     GL41C.glBindTexture(GL41C.GL_TEXTURE_2D, 0);

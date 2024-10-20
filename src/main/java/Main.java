@@ -207,7 +207,7 @@ public class Main {
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(vec3));
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
       GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
-      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -0.5f, -1f});
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -1f, -1f});
 
       GL41C.glUniform1i(shaders.getProgram("default").getUniform("baseColorTex"), 0);
       GL41C.glUniform1i(shaders.getProgram("default").getUniform("emissiveTex"), 1);
@@ -223,7 +223,7 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0f, -3f));
+    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0.135f, -3f));
     level.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f());
 
     GLFW.glfwSwapBuffers(window);
