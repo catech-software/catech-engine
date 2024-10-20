@@ -204,7 +204,7 @@ public class Main {
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("view"), false, prevView.lerp(currView, (float) alpha).translate(0f, -1.59f, 0f).get(mat4));
       GL41C.glUniformMatrix4fv(shaders.getProgram("default").getUniform("projection"), false, new Matrix4f().perspective((float) Math.toRadians(70f), ratio, 0.01f, 100f).get(mat4));
 
-      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), player.position.get(vec3));
+      GL41C.glUniform3fv(shaders.getProgram("default").getUniform("viewPosition"), new Vector3f(player.prevPosition).lerp(player.position, (float) alpha).add(0f, 1.59f, 0f).get(vec3));
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("lightColor"), new float[]{1f, 1f, 1f});
       GL41C.glUniform1f(shaders.getProgram("default").getUniform("ambientLight"), 0.1f);
       GL41C.glUniform3fv(shaders.getProgram("default").getUniform("directionalLight"), new float[]{0f, -1f, -1f});
