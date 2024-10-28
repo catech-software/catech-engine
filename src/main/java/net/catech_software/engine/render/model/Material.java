@@ -1,4 +1,4 @@
-package net.catech_software.engine.model;
+package net.catech_software.engine.render.model;
 
 import java.nio.IntBuffer;
 
@@ -11,21 +11,21 @@ public class Material {
   private Texture normalTex;
   private Texture occlusionRoughnessMetallicTex;
 
-  public Material(AIMaterial material) {
+  public Material(AIMaterial material, TextureCache cache) {
     this.material = material;
 
     try (AIString path = AIString.create()) {
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_BASE_COLOR, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.baseColorTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
+      this.baseColorTex = !path.dataString().isEmpty() ? cache.get(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_EMISSIVE, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.emissiveTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
+      this.emissiveTex = !path.dataString().isEmpty() ? cache.get(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_NORMALS, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.normalTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
+      this.normalTex = !path.dataString().isEmpty() ? cache.get(path.dataString()) : Texture.blank;
 
       Assimp.aiGetMaterialTexture(this.material, Assimp.aiTextureType_UNKNOWN, 0, path, (IntBuffer) null, null, null, null, null, null);
-      this.occlusionRoughnessMetallicTex = !path.dataString().isEmpty() ? new Texture(path.dataString()) : Texture.blank;
+      this.occlusionRoughnessMetallicTex = !path.dataString().isEmpty() ? cache.get(path.dataString()) : Texture.blank;
     }
   }
 

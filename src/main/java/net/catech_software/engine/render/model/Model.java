@@ -1,4 +1,4 @@
-package net.catech_software.engine.model;
+package net.catech_software.engine.render.model;
 
 import java.util.ArrayList;
 
@@ -11,11 +11,11 @@ public class Model {
   private ArrayList<Mesh> meshes;
   private Node rootNode;
 
-  public Model(AIScene scene) {
+  public Model(AIScene scene, TextureCache cache) {
     this.scene = scene;
 
     this.materials = new ArrayList<>();
-    for (int i = 0; i < this.scene.mNumMaterials(); i++) this.materials.add(new Material(AIMaterial.create(this.scene.mMaterials().get(i))));
+    for (int i = 0; i < this.scene.mNumMaterials(); i++) this.materials.add(new Material(AIMaterial.create(this.scene.mMaterials().get(i)), cache));
 
     this.meshes = new ArrayList<>();
     for (int i = 0; i < this.scene.mNumMeshes(); i++) this.meshes.add(new Mesh(AIMesh.create(this.scene.mMeshes().get(i)), this.materials));

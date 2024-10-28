@@ -1,4 +1,4 @@
-package net.catech_software.engine.model;
+package net.catech_software.engine.render.model;
 
 import java.util.ArrayList;
 

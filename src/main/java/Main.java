@@ -4,6 +4,7 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import net.catech_software.engine.render.model.TextureCache;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -15,17 +16,16 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import net.catech_software.engine.input.Controls;
-import net.catech_software.engine.model.LoadScene;
-import net.catech_software.engine.model.Model;
-import net.catech_software.engine.object.Player;
+import net.catech_software.engine.physics.object.Player;
 import net.catech_software.engine.render.shader.*;
 import net.catech_software.util.Resource;
 
 public class Main {
   private static long window;
   private static ShaderList shaders;
-  private static Model model;
-  private static Model level;
+  private static WaterBottle waterBottle;
+  private static TextureCache cache = new TextureCache();
+  private static Map0 map0;
   private static IntBuffer width, height;
   private static int fpsCount, upsCount;
   private static final Controls controls = new Controls();
@@ -142,8 +142,10 @@ public class Main {
     shaders.getProgram("default").setUniform("occlusionRoughnessMetallicTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "occlusionRoughnessMetallicTex"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
-    model = new Model(LoadScene.loadScene("assets/models/WaterBottle/WaterBottle.gltf"));
-    level = new Model(LoadScene.loadScene("assets/models/map0/map0.gltf"));
+    waterBottle = new WaterBottle(cache);
+    waterBottle.prevPosition.add(0f, 0.135f, -3f);
+    waterBottle.position.add(0f, 0.135f, -3f);
+    map0 = new Map0(cache);
   }
 
   private static void input() {
@@ -182,8 +184,8 @@ public class Main {
     if (controls.moveBack) player.position.add(new Vector3f(0f, 0f, 1.3f * (float) delta).rotate(player.rotation));
     if (controls.moveLeft) player.position.add(new Vector3f(-1.3f * (float) delta, 0f, 0f).rotate(player.rotation));
     if (controls.moveRight) player.position.add(new Vector3f(1.3f * (float) delta, 0f, 0f).rotate(player.rotation));
-    if (controls.moveDown) player.position.add(0f, -1.3f * (float) delta, 0f);
-    if (controls.moveUp) player.position.add(0f, 1.3f * (float) delta, 0f);
+    if (controls.moveDown) player.position.add(0f, -0.89f * (float) delta, 0f);
+    if (controls.moveUp) player.position.add(0f, 0.89f * (float) delta, 0f);
 
     upsCount++;
   }
@@ -223,8 +225,8 @@ public class Main {
     GL41C.glEnable(GL41C.GL_CULL_FACE);
     GL41C.glClearColor(0f, 0f, 0f, 0f);
     GL41C.glClear(GL41C.GL_COLOR_BUFFER_BIT | GL41C.GL_DEPTH_BUFFER_BIT);
-    model.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f().translate(0f, 0.135f, -3f));
-    level.draw(shaders.getProgram("default").getUniform("model"), new Matrix4f());
+    waterBottle.draw(shaders.getProgram("default").getUniform("model"), alpha);
+    map0.draw(shaders.getProgram("default").getUniform("model"));
 
     GLFW.glfwSwapBuffers(window);
     GLFW.glfwPollEvents();
@@ -238,7 +240,8 @@ public class Main {
   private static void exit() {
     MemoryUtil.memFree(width);
     MemoryUtil.memFree(height);
-    level.free();
+    map0.free();
+    waterBottle.free();
     GL41C.glDeleteProgram(shaders.getProgram("default").getProgram());
     GL41C.glDeleteShader(shaders.getVertexShader("default").getShader());
     GL41C.glDeleteShader(shaders.getFragmentShader("default").getShader());
