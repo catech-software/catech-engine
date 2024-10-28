@@ -5,8 +5,4 @@ import org.joml.*;
 public class Player extends GameObject {
   public Quaternionf camera = new Quaternionf();
   public Quaternionf prevCamera = new Quaternionf();
-
-  public Player() {
-    super();
-  }
 }
