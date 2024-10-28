@@ -1,7 +1,8 @@
 package net.catech_software.engine.physics.map;
 
-import net.catech_software.engine.render.model.Model;
 import org.joml.Matrix4f;
+
+import net.catech_software.engine.render.model.Model;
 
 public abstract class GameMap {
   protected Model model;
