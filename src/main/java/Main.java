@@ -23,13 +23,15 @@ import net.catech_software.util.Resource;
 public class Main {
   private static long window;
   private static ShaderList shaders;
-  private static WaterBottle waterBottle;
-  private static TextureCache cache = new TextureCache();
-  private static Map0 map0;
+  private static final TextureCache cache = new TextureCache();
   private static IntBuffer width, height;
   private static int fpsCount, upsCount;
   private static final Controls controls = new Controls();
-  private static final Player player = new Player();
+  private static Player player;
+  private static WaterBottle waterBottle;
+  private static Map0 map0;
+  private static boolean collision = false;
+  private static boolean onGround = true;
 
   private static final GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
 
@@ -38,23 +40,32 @@ public class Main {
     public void invoke(long window, int key, int scancode, int action, int mods) {
       if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_PRESS) GLFW.glfwSetWindowShouldClose(window, true);
 
-      if (key == GLFW.GLFW_KEY_W && action == GLFW.GLFW_PRESS) controls.moveForward = true;
+      if (key == GLFW.GLFW_KEY_W && action == GLFW.GLFW_PRESS) {
+        controls.moveForward = true;
+        controls.moveBack = false;
+      }
       if (key == GLFW.GLFW_KEY_W && action == GLFW.GLFW_RELEASE) controls.moveForward = false;
 
-      if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_PRESS) controls.moveBack = true;
+      if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_PRESS) {
+        controls.moveBack = true;
+        controls.moveForward = false;
+      }
       if (key == GLFW.GLFW_KEY_S && action == GLFW.GLFW_RELEASE) controls.moveBack = false;
 
-      if (key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_PRESS) controls.moveLeft = true;
+      if (key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_PRESS) {
+        controls.moveLeft = true;
+        controls.moveRight = false;
+      }
       if (key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_RELEASE) controls.moveLeft = false;
 
-      if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_PRESS) controls.moveRight = true;
+      if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_PRESS) {
+        controls.moveRight = true;
+        controls.moveLeft = false;
+      }
       if (key == GLFW.GLFW_KEY_D && action == GLFW.GLFW_RELEASE) controls.moveRight = false;
 
-      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) controls.moveUp = true;
-      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) controls.moveUp = false;
-
-      if (key == GLFW.GLFW_KEY_LEFT_CONTROL && action == GLFW.GLFW_PRESS) controls.moveDown = true;
-      if (key == GLFW.GLFW_KEY_LEFT_CONTROL && action == GLFW.GLFW_RELEASE) controls.moveDown = false;
+      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_PRESS) controls.jump = true;
+      if (key == GLFW.GLFW_KEY_SPACE && action == GLFW.GLFW_RELEASE) controls.jump = false;
     }
   };
 
@@ -142,9 +153,10 @@ public class Main {
     shaders.getProgram("default").setUniform("occlusionRoughnessMetallicTex", GL41C.glGetUniformLocation(shaders.getProgram("default").getProgram(), "occlusionRoughnessMetallicTex"));
     shaders.getProgram("default").setDataLocation("fragColor", GL41C.glGetFragDataLocation(shaders.getProgram("default").getProgram(), "fragColor"));
 
+    player = new Player();
     waterBottle = new WaterBottle(cache);
-    waterBottle.prevPosition.add(0f, 0.135f, -3f);
-    waterBottle.position.add(0f, 0.135f, -3f);
+    waterBottle.prevPosition.add(0f, 0.13f, -3f);
+    waterBottle.position.add(0f, 0.13f, -3f);
     map0 = new Map0(cache);
   }
 
@@ -166,6 +178,7 @@ public class Main {
 
   private static void update(double delta) {
     Vector3f camera = new Vector3f();
+    Vector3f displacement = new Vector3f();
 
     player.prevRotation = new Quaternionf(player.rotation);
     player.rotation.rotateY((float) (-controls.deltaX * delta) * 0.2f);
@@ -180,12 +193,32 @@ public class Main {
     controls.deltaY = 0d;
 
     player.prevPosition = new Vector3f(player.position);
-    if (controls.moveForward) player.position.add(new Vector3f(0f, 0f, -1.3f * (float) delta).rotate(player.rotation));
-    if (controls.moveBack) player.position.add(new Vector3f(0f, 0f, 1.3f * (float) delta).rotate(player.rotation));
-    if (controls.moveLeft) player.position.add(new Vector3f(-1.3f * (float) delta, 0f, 0f).rotate(player.rotation));
-    if (controls.moveRight) player.position.add(new Vector3f(1.3f * (float) delta, 0f, 0f).rotate(player.rotation));
-    if (controls.moveDown) player.position.add(0f, -0.89f * (float) delta, 0f);
-    if (controls.moveUp) player.position.add(0f, 0.89f * (float) delta, 0f);
+    if (controls.moveForward) displacement.add(0f, 0f, -1f);
+    if (controls.moveBack) displacement.add(0f, 0f, 1f);
+    if (controls.moveLeft) displacement.add(-1f, 0f, 0f);
+    if (controls.moveRight) displacement.add(1f, 0f, 0f);
+    if (controls.jump && onGround) player.velocity.add(0f, 4.43f, 0f);
+    displacement.normalize(1.5f * (float) delta).rotate(player.rotation);
+    if (!Float.isNaN(displacement.x()) &&
+        !Float.isNaN(displacement.y()) &&
+        !Float.isNaN(displacement.z()))
+      player.position.add(displacement);
+
+    player.force.add(new Vector3f(0f, -9.81f, 0f).mul(player.mass));
+    player.applyForces(delta);
+    onGround = player.position.y() <= 0f;
+
+    if (onGround) {
+      player.position.setComponent(1, 0f);
+      player.velocity.setComponent(1, 0f);
+    }
+
+    if (map0.collision(player) || waterBottle.collision(player)) {
+      if (!collision) System.out.printf("Collision detected\n");
+      collision = true;
+    } else {
+      collision = false;
+    }
 
     upsCount++;
   }
@@ -242,6 +275,7 @@ public class Main {
     MemoryUtil.memFree(height);
     map0.free();
     waterBottle.free();
+    cache.free();
     GL41C.glDeleteProgram(shaders.getProgram("default").getProgram());
     GL41C.glDeleteShader(shaders.getVertexShader("default").getShader());
     GL41C.glDeleteShader(shaders.getFragmentShader("default").getShader());
