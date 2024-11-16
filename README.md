@@ -15,7 +15,7 @@ cd path/to/catech-engine/bin
 
 ```sh
 cd path/to/catech-engine/bin
-./catech-engine-macos.sh
+./catech-engine-macos
 ```
 
 ### Windows

@@ -4,5 +4,5 @@ PDIR="$(pwd)"
 DIR="$(dirname "$(realpath -q "$0")")"
 
 cd "$DIR" || exit
-./catech-engine -XstartOnFirstThread
+JAVA_OPTS=-XstartOnFirstThread ./catech-engine
 cd "$PDIR" || exit
