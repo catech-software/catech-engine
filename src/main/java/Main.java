@@ -105,6 +105,8 @@ public class Main {
     GLFW.glfwMakeContextCurrent(window);
     GL.createCapabilities();
 
+    GLFW.glfwSwapInterval(1);
+
     shaders = new ShaderList();
     shaders.setProgram("default", new ShaderProgram());
     shaders.setVertexShader("default", new VertexShader());
